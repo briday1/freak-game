@@ -33,6 +33,12 @@ jobs:
           mkdir -p build/web
           ./godot --headless --export-release "Web" "$PWD/build/web/index.html"
 
+      - name: Inject coi-serviceworker (required for Godot 4 threads on itch.io)
+        run: |
+          curl -sL -o build/web/coi-serviceworker.js \
+            "https://raw.githubusercontent.com/gzuidhof/coi-serviceworker/master/coi-serviceworker.js"
+          sed -i 's|<head>|<head>\n\t<script src="coi-serviceworker.js"></script>|' build/web/index.html
+
       - name: Install butler
         run: |
           curl -sL -o butler.zip \
