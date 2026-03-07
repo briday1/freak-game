@@ -2,15 +2,18 @@ class_name CreatureView
 extends Node2D
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  Generic creature renderer — knows nothing about specific traits.
+#  Generic creature renderer — pixel-art edition.
 #
-#  Assign an array of CreatureTrait resources in the Inspector.
-#  Each trait owns its genome keys, its random ranges, and its draw logic.
-#  Draw order is array order (back → front).
+#  Each trait contributes pixels to a shared Image (CANVAS_SIZE × CANVAS_SIZE).
+#  The assembled Image is set as a texture on a Sprite2D with nearest-neighbor
+#  filtering and PIXEL_SCALE upscaling for a chunky pixel look.
 #
 #  To make a new creature type: create a new set of .tres resources and assign
 #  them to this array.  No code changes needed here.
 # ─────────────────────────────────────────────────────────────────────────────
+
+const PC          := preload("res://scripts/pixel_canvas.gd")
+const PIXEL_SCALE := 4  # 48 × 4 = 192-px sprite on screen
 
 @export var traits: Array = []
 
@@ -18,10 +21,19 @@ var creature_type: String = ""
 var genome: Dictionary = {}
 var _type_script  # the loaded type GDScript, for constraints
 
-var _idle_tween:   Tween = null
+var _idle_tween:    Tween  = null
 var _base_position: Vector2 = Vector2.ZERO
+var _sprite: Sprite2D
 
 func _ready() -> void:
+	_sprite = Sprite2D.new()
+	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_sprite.scale          = Vector2(PIXEL_SCALE, PIXEL_SCALE)
+	# Center in the 300×450 SubViewport. CANVAS_SIZE=64, scale=4 → 256px sprite.
+	# Offset slightly upward so legs don't clip the bottom.
+	_sprite.position       = Vector2(150, 210)
+	add_child(_sprite)
+
 	_base_position = position
 	if traits.is_empty():
 		set_type(load("res://scripts/creature_type_registry.gd").random_type_name())
@@ -111,7 +123,7 @@ func random_genome() -> Dictionary:
 func set_genome(new_genome: Dictionary) -> void:
 	genome = new_genome
 	_clamp_genome()
-	queue_redraw()
+	_repaint()
 
 func _clamp_genome() -> void:
 	var schema := get_schema()
@@ -134,11 +146,12 @@ func _clamp_genome() -> void:
 					clamp(c.g, lo.g, hi.g),
 					clamp(c.b, lo.b, hi.b))
 
-# ─── Draw ─────────────────────────────────────────────────────────────────────
+# ─── Pixel paint ──────────────────────────────────────────────────────────────
 
-func _draw() -> void:
-	if genome.is_empty():
+func _repaint() -> void:
+	if genome.is_empty() or _sprite == null:
 		return
-	draw_rect(Rect2(0, 0, 300, 450), Color(0.1, 0.1, 0.15))
+	var img := PC.make_image()
 	for t in traits:
-		t.draw(self, genome)
+		t.paint(img, genome)
+	_sprite.texture = ImageTexture.create_from_image(img)
