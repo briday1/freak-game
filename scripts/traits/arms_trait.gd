@@ -15,33 +15,36 @@ func paint(img: Image, genome: Dictionary) -> void:
 	var bh: int  = bsz.y
 	var cx: int  = 32
 	var cy: int  = 40
-	var al_px: int = int(remap(genome["arm_length"] as float, 20.0, 70.0, 4.0, 12.0))
+	var al_px: int = int(remap(genome["arm_length"] as float, 20.0, 70.0, 4.0, 16.0))
 	var arm_y: int = cy - bh + bh / 3
-	var col: Color    = genome["body_color"]
-	var accent: Color = genome["accent_color"]
-	var claws: bool   = genome.get("has_claws", false)
+	var pal := PC.palette(genome)
+	var claws: bool = genome.get("has_claws", false)
 
 	for side: int in [-1, 1]:
-		var ax: int = cx + side * bw
-		var ex: int = ax + side * al_px
-		var ey: int = arm_y + al_px
+		var ax: int    = cx + side * bw
+		var ex: int    = ax + side * al_px
+		var ey: int    = arm_y + al_px
+		var mid_x: int = ax + side * al_px / 2
+		var mid_y: int = arm_y + al_px / 2
 
 		if claws:
-			# CLAW ARM: thin line + 3-prong claw tips
-			PC.line(img, ax, arm_y, ex, ey, accent)
-			# Forward prong
-			PC.line(img, ex, ey, ex + side * 3, ey - 2, accent)
-			# Middle prong (straight down)
-			PC.line(img, ex, ey, ex + side,     ey + 3, accent)
-			# Back prong
-			PC.line(img, ex, ey, ex - side,     ey + 2, accent)
-			# Lightened claw tips
-			PC.blend(img, ex + side * 3, ey - 2, accent.lightened(0.5))
-			PC.blend(img, ex + side,     ey + 3, accent.lightened(0.5))
+			# CLAW ARM: thin line + shoulder dot + 3-prong claw tips
+			PC.fill_circle(img, ax, arm_y, 2, pal["shadow"])
+			PC.line(img, ax, arm_y, ex, ey, pal["accent"])
+			PC.fill_circle(img, mid_x, mid_y, 1, pal["outline"])
+			PC.line(img, ex, ey, ex + side * 4, ey - 2, pal["accent"])
+			PC.line(img, ex, ey, ex + side,     ey + 4, pal["accent"])
+			PC.line(img, ex, ey, ex - side,     ey + 3, pal["accent"])
+			PC.blend(img, ex + side * 4, ey - 2, pal["shine"])
+			PC.blend(img, ex + side,     ey + 4, pal["shine"])
 		else:
-			# ROUNDED ARM: thick line + blob hand
-			PC.line(img, ax, arm_y, ex, ey, col, 1)
-			# Blob hand: outer circle in accent, inner in body color
-			PC.fill_circle(img, ex, ey, 3, accent)
-			PC.fill_circle(img, ex, ey, 2, col)
+			# ROUNDED ARM: thick line + shoulder + elbow joint + blob hand
+			PC.fill_circle(img, ax, arm_y, 2, pal["shadow"])
+			PC.line(img, ax, arm_y, ex, ey, pal["body"], 1)
+			PC.fill_circle(img, mid_x, mid_y, 2, pal["accent"])
+			PC.fill_circle(img, mid_x, mid_y, 1, pal["highlight"])
+			PC.fill_circle(img, ex, ey, 3, pal["accent"])
+			PC.fill_circle(img, ex, ey, 2, pal["body"])
+			var sh: Color = pal["shine"]; sh.a = 0.7
+			PC.blend(img, ex - 1, ey - 1, sh)
 

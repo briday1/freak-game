@@ -24,8 +24,9 @@ func paint(img: Image, genome: Dictionary) -> void:
 		var bh_px: int = int(remap(bill, 2.0, 20.0, 3.0, 7.0))
 		var bw_px: int = int(remap(bill, 2.0, 20.0, 3.0, 6.0))
 		var skew: int  = int(genome.get("bill_tip_offset", 0.0) as float)
-		var acc: Color = genome["accent_color"]
-		var yel: Color = acc.lightened(0.35)
+		var pal2 := PC.palette(genome)
+		var acc: Color = pal2["accent"]
+		var yel: Color = pal2["highlight"]
 		# Upper mandible
 		PC.fill_polygon(img, [
 			Vector2(hc.x - bw_px, mouth_y - 1),

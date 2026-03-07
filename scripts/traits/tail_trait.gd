@@ -18,10 +18,9 @@ func paint(img: Image, genome: Dictionary) -> void:
 	var bh: int  = bsz.y
 	var cx: int  = 32
 	var cy: int  = 40
-	var tl_px: int = int(remap(genome["tail_length"] as float, 20.0, 80.0, 8.0, 18.0))
+	var tl_px: int = int(remap(genome["tail_length"] as float, 20.0, 80.0, 6.0, 22.0))
 	var curl: float = genome["tail_curl"] as float
-	var col: Color    = genome["body_color"]
-	var accent: Color = genome["accent_color"]
+	var pal := PC.palette(genome)
 
 	# Attach at right side of body, mid-height
 	var ax: int = cx + bw
@@ -35,11 +34,11 @@ func paint(img: Image, genome: Dictionary) -> void:
 			Vector2(ax,     ay - 3),
 			Vector2(ax,     ay + 3),
 			Vector2(tip_x,  tip_y),
-		], accent)
-		PC.line(img, ax, ay - 1, tip_x, tip_y, accent.lightened(0.4))
+		], pal["accent"])
+		PC.line(img, ax, ay - 1, tip_x, tip_y, pal["highlight"])
 
 	elif curl < 0.7:
-		# WAVY: S-curve oscillating angle
+		# WAVY: S-curve oscillating, 2px thick at base
 		var px: float = float(ax)
 		var py: float = float(ay)
 		var angle: float = 0.0
@@ -47,20 +46,20 @@ func paint(img: Image, genome: Dictionary) -> void:
 		for i: int in range(tl_px):
 			var nx := px + cos(angle)
 			var ny := py - sin(angle) * 0.7
-			var c: Color = col if i < 4 else accent
+			var t: float = float(i) / float(tl_px)
+			var c: Color = pal["body"].lerp(pal["accent"], t)
 			PC.blend(img, int(nx), int(ny), c)
-			# Thicker at base
-			if i < 5:
+			if i < 6:
 				PC.blend(img, int(nx), int(ny) + 1, c)
+				PC.blend(img, int(nx) + 1, int(ny), c)
 			px = nx
 			py = ny
-			# Oscillate direction every few steps
 			if i % (maxi(2, tl_px / 4)) == 0:
 				sign = -sign
 			angle += sign * 0.28
 
 	else:
-		# LOOPED: outward spiral
+		# LOOPED: outward spiral with gradient
 		var px: float  = float(ax)
 		var py: float  = float(ay)
 		var angle: float = 0.0
@@ -68,10 +67,12 @@ func paint(img: Image, genome: Dictionary) -> void:
 		for i: int in range(tl_px):
 			var nx := px + cos(angle) * radius / float(tl_px) * 3.0
 			var ny := py - sin(angle) * radius / float(tl_px) * 3.0
-			var c: Color = col if i < 4 else accent
+			var t: float = float(i) / float(tl_px)
+			var c: Color = pal["body"].lerp(pal["spot"], t)
 			PC.blend(img, int(nx), int(ny), c)
-			if i < 4:
+			if i < 5:
 				PC.blend(img, int(nx), int(ny) + 1, c)
+				PC.blend(img, int(nx) + 1, int(ny), c)
 			px = nx
 			py = ny
 			angle += PI / float(maxi(3, tl_px))

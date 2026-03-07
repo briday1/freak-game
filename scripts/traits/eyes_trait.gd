@@ -15,8 +15,9 @@ func paint(img: Image, genome: Dictionary) -> void:
 	var hc: Vector2i = HeadTrait.head_center(genome)
 	var r: int       = HeadTrait.head_radius(genome)
 	var esp: int     = int(remap(genome["eye_spacing"] as float, 5.0, 30.0, 1.0, 5.0))
-	var esz: int     = int(remap(genome["eye_size"]    as float, 3.0, 15.0, 1.0, 3.0))
-	var col: Color   = genome["eye_color"]
+	var esz: int     = int(remap(genome["eye_size"]    as float, 3.0, 15.0, 1.0, 5.0))
+	var pal := PC.palette(genome)
+	var col: Color   = pal["spot"]
 	var goofy: float = genome.get("goofiness", 0.0) as float
 	var eye_y: int   = hc.y - 1
 

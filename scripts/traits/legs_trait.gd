@@ -16,39 +16,43 @@ func paint(img: Image, genome: Dictionary) -> void:
 	var bh: int  = bsz.y
 	var cx: int  = 32
 	var cy: int  = 40
-	var ll_px: int  = int(remap(genome["leg_length"] as float, 20.0, 80.0, 6.0, 15.0))
+	var ll_px: int  = int(remap(genome["leg_length"] as float, 20.0, 80.0, 5.0, 18.0))
 	var base_y: int = cy + bh
-	var col: Color    = genome["body_color"]
-	var accent: Color = genome["accent_color"]
-	var quad: bool    = genome.get("extra_legs", false)
+	var pal := PC.palette(genome)
+	var quad: bool = genome.get("extra_legs", false)
 
 	if quad:
-		# QUADRUPED: 4 legs at body corners, front lean forward, back lean back
+		# QUADRUPED: 4 legs at body corners, knee joints, paws
 		var o: int = maxi(2, bw * 3 / 4)
-		var pairs: Array = [
-			[-o, -1],   # front-left
-			[o,  -1],   # front-right (lean side * -1 = outward)
-			[-o,  1],   # back-left
-			[o,   1],   # back-right
-		]
+		var pairs: Array = [[-o, -1], [o, -1], [-o, 1], [o, 1]]
 		for pair: Array in pairs:
 			var ox: int   = pair[0]
 			var lean: int = pair[1]
 			var lx: int   = cx + ox
-			# Lean: front legs lean forward (negative x), back legs lean backward
 			var ey: int   = mini(base_y + ll_px, PC.CANVAS_SIZE - 2)
 			var ex: int   = lx - lean * (ll_px / 3)
-			PC.line(img, lx, base_y, ex, ey, col, 1)
-			# Paw: 3px horizontal line
-			PC.line(img, ex - 1, ey, ex + 2, ey, accent)
+			var ky: int   = base_y + ll_px / 2
+			var kx: int   = lx - lean * (ll_px / 6)
+			PC.line(img, lx, base_y, kx, ky, pal["body"], 1)
+			PC.fill_circle(img, kx, ky, 2, pal["accent"])
+			PC.fill_circle(img, kx, ky, 1, pal["highlight"])
+			PC.line(img, kx, ky, ex, ey, pal["body"], 1)
+			# Paw
+			PC.fill_circle(img, ex, ey, 2, pal["shadow"])
+			PC.line(img, ex - 2, ey + 1, ex + 3, ey + 1, pal["accent"])
 	else:
-		# BIPEDAL: 2 thick legs with T-shaped feet
+		# BIPEDAL: 2 thick legs, knee joint, T-shaped feet
 		var o: int = maxi(2, bw / 2)
 		for side: int in [-1, 1]:
 			var lx: int = cx + side * o
 			var ey: int = mini(base_y + ll_px, PC.CANVAS_SIZE - 2)
-			PC.line(img, lx, base_y, lx, ey, col, 1)
-			# T-shaped foot: horizontal bar + shadow
-			PC.line(img, lx - 2, ey, lx + 2, ey, accent)
-			PC.line(img, lx - 1, ey + 1, lx + 2, ey + 1, accent.darkened(0.25))
+			var ky: int = base_y + ll_px / 2
+			var kx: int = lx + side * 1
+			PC.line(img, lx, base_y, kx, ky, pal["body"], 1)
+			PC.fill_circle(img, kx, ky, 2, pal["accent"])
+			PC.fill_circle(img, kx, ky, 1, pal["highlight"])
+			PC.line(img, kx, ky, lx, ey, pal["body"], 1)
+			# T-foot
+			PC.line(img, lx - 3, ey, lx + 3, ey, pal["accent"])
+			PC.line(img, lx - 2, ey + 1, lx + 3, ey + 1, pal["shadow"])
 

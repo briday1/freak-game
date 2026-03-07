@@ -15,9 +15,10 @@ func paint(img: Image, genome: Dictionary) -> void:
 	var hc := HeadTrait.head_center(genome)
 	var hr: int      = HeadTrait.head_radius(genome)
 	var hs: float    = genome["head_size"] as float
-	var horn_h: int  = int(remap(genome["horn_size"] as float, 8.0, 40.0, 3.0, 10.0))
-	var col: Color    = genome["accent_color"]
-	var hi: Color     = col.lightened(0.45)
+	var horn_h: int  = int(remap(genome["horn_size"] as float, 8.0, 40.0, 3.0, 13.0))
+	var pal := PC.palette(genome)
+	var col: Color = pal["accent"]
+	var hi: Color  = pal["highlight"]
 
 	for side: int in [-1, 1]:
 		# Horn base sits on top of the head, inset slightly
