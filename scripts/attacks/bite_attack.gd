@@ -2,7 +2,12 @@ static func get_name()     -> String: return "Bite"
 static func get_power()    -> int:    return 60
 static func get_accuracy() -> float:  return 0.90
 static func get_type()     -> String: return "physical"
-static func get_element()  -> String: return "normal"
+static func get_element()  -> String: return "dark"
+
+static func get_data() -> Dictionary:
+	return { "name": get_name(), "power": get_power(), "accuracy": get_accuracy(),
+		"type": get_type(), "element": get_element(),
+		"effects": [{ "id": "poison", "chance": 0.15 }] }
 
 static func execute(attacker: Dictionary, defender: Dictionary) -> Dictionary:
 	if randf() > get_accuracy():

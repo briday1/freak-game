@@ -20,6 +20,17 @@ static func make_attacks() -> Array:
 		load("res://scripts/attacks/punch_attack.gd"),
 	]
 
+static func get_resistances() -> Dictionary:
+	return {
+		"fire":     0.5,   # resistant
+		"ice":      2.0,   # weak
+		"electric": 1.5,   # slightly weak
+		"normal":   1.0,
+		"dark":     1.0,
+		"nature":   1.0,
+		"water":    1.0,
+	}
+
 static func get_constraints() -> Dictionary:
 	return {
 		"has_wings":     { "type": "bool",  "forced": true },

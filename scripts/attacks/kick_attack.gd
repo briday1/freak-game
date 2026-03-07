@@ -4,6 +4,10 @@ static func get_accuracy() -> float:  return 0.88
 static func get_type()     -> String: return "physical"
 static func get_element()  -> String: return "normal"
 
+static func get_data() -> Dictionary:
+	return { "name": get_name(), "power": get_power(), "accuracy": get_accuracy(),
+		"type": get_type(), "element": get_element(), "effects": [] }
+
 static func execute(attacker: Dictionary, defender: Dictionary) -> Dictionary:
 	if randf() > get_accuracy():
 		return { "hit": false, "damage": 0, "message": "But it missed!" }

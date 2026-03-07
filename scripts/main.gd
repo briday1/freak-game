@@ -20,6 +20,13 @@ func _ready() -> void:
 	fight_btn.pressed.connect(_on_fight_pressed)
 	$CanvasLayer/VBoxContainer.add_child(fight_btn)
 
+	var lab_btn := Button.new()
+	lab_btn.text = "⚗️  Attack Lab"
+	lab_btn.custom_minimum_size = Vector2(0, 40)
+	lab_btn.add_theme_font_size_override("font_size", 16)
+	lab_btn.pressed.connect(_on_lab_pressed)
+	$CanvasLayer/VBoxContainer.add_child(lab_btn)
+
 func _populate_picker(picker: OptionButton) -> void:
 	picker.clear()
 	picker.add_item("🎲 Random", 0)
@@ -50,7 +57,16 @@ func _on_fight_pressed() -> void:
 	GameState.set_fighters(
 		creature_a.creature_type, creature_a.genome,
 		creature_b.creature_type, creature_b.genome)
+	# Clear movesets so battle uses type defaults (or whatever Lab last set)
+	GameState.moveset_a = []
+	GameState.moveset_b = []
 	get_tree().change_scene_to_file("res://scenes/battle.tscn")
+
+func _on_lab_pressed() -> void:
+	GameState.set_fighters(
+		creature_a.creature_type, creature_a.genome,
+		creature_b.creature_type, creature_b.genome)
+	get_tree().change_scene_to_file("res://scenes/attack_lab.tscn")
 
 func _breed() -> void:
 	var ga: Dictionary = creature_a.genome

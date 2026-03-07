@@ -2,6 +2,8 @@ extends Node2D
 
 const Registry    := preload("res://scripts/creature_type_registry.gd")
 const StatsHelper := preload("res://scripts/creature_stats.gd")
+const AttackData  := preload("res://scripts/attack_data.gd")
+const EffectReg   := preload("res://scripts/effect_registry.gd")
 
 # ── State ──────────────────────────────────────────────────────────────────────
 enum State { PLAYER_TURN, ANIMATING, BATTLE_OVER }
@@ -15,6 +17,10 @@ var _name_enemy:   String = ""
 var _name_player:  String = ""
 var _attacks_enemy:  Array = []
 var _attacks_player: Array = []
+
+# Active status effects per fighter: { "id": String, + effect-state keys }
+var _status_enemy:  Dictionary = {}
+var _status_player: Dictionary = {}
 
 # ── Node refs (built in _ready) ────────────────────────────────────────────────
 var _view_enemy              # CreatureView (duck-typed for await-ability)
@@ -152,19 +158,19 @@ func _init_battle() -> void:
 	if not (fb["genome"] as Dictionary).is_empty():
 		_view_player.set_genome(fb["genome"])
 
-	# Derive stats
+	# Derive stats + attach per-type resistances
 	_stats_enemy  = StatsHelper.from_genome(_view_enemy.genome)
 	_stats_player = StatsHelper.from_genome(_view_player.genome)
+	var ts_a = load(Registry.TYPES[fa["type"]])
+	var ts_b = load(Registry.TYPES[fb["type"]])
+	_stats_enemy["resistances"]  = ts_a.get_resistances() if ts_a.has_method("get_resistances") else {}
+	_stats_player["resistances"] = ts_b.get_resistances() if ts_b.has_method("get_resistances") else {}
 	_hp_enemy     = _stats_enemy["max_hp"]
 	_hp_player    = _stats_player["max_hp"]
 
-	# Load attacks from type scripts
-	var ts_a = load(Registry.TYPES[fa["type"]])
-	var ts_b = load(Registry.TYPES[fb["type"]])
-	_attacks_enemy  = ts_a.make_attacks() if ts_a.has_method("make_attacks") else \
-		[load("res://scripts/attacks/punch_attack.gd")]
-	_attacks_player = ts_b.make_attacks() if ts_b.has_method("make_attacks") else \
-		[load("res://scripts/attacks/punch_attack.gd")]
+	# Attacks: use GameState movesets if set, else fall back to type defaults
+	_attacks_enemy  = _load_attacks(fa["type"], GameState.moveset_a)
+	_attacks_player = _load_attacks(fb["type"], GameState.moveset_b)
 
 	# HP bars
 	_bar_enemy.max_value  = float(_stats_enemy["max_hp"])
@@ -176,7 +182,7 @@ func _init_battle() -> void:
 	# Attack buttons (up to 4)
 	for i in range(4):
 		if i < _attacks_player.size():
-			_attack_btns[i].text    = _attacks_player[i].get_name()
+			_attack_btns[i].text    = _btn_label(_attacks_player[i])
 			_attack_btns[i].visible = true
 		else:
 			_attack_btns[i].visible = false
@@ -186,6 +192,25 @@ func _init_battle() -> void:
 	_view_enemy.play_idle()
 	_view_player.play_idle()
 	_start_player_turn()
+
+func _load_attacks(type_name: String, moveset: Array) -> Array:
+	var real := moveset.filter(func(d): return not (d as Dictionary).is_empty())
+	if not real.is_empty():
+		return real
+	var ts = load(Registry.TYPES[type_name])
+	if ts.has_method("make_attacks"):
+		return ts.make_attacks().map(func(s): return s.get_data())
+	return [load("res://scripts/attacks/punch_attack.gd").get_data()]
+
+func _btn_label(atk: Dictionary) -> String:
+	var icon: String = AttackData._ELEMENT_ICON.get(atk.get("element", ""), "")
+	var eff_icons := ""
+	for e in atk.get("effects", []):
+		eff_icons += EffectReg.get_icon(e["id"])
+	return "%s%s %s\npow:%d  acc:%.0f%%%s" % [
+		icon, eff_icons, atk["name"],
+		atk["power"], float(atk["accuracy"]) * 100.0,
+		" [sp]" if atk["type"] == "special" else ""]
 
 # ── Turn flow ──────────────────────────────────────────────────────────────────
 func _start_player_turn() -> void:
@@ -204,49 +229,109 @@ func _execute_turn(player_atk_idx: int) -> void:
 	var player_first: bool = _stats_player["speed"] >= _stats_enemy["speed"]
 
 	if player_first:
-		await _do_attack(true,  player_atk_idx)
+		if not await _tick_status(true):
+			await _do_attack(true, player_atk_idx)
 		if _state == State.BATTLE_OVER:
 			return
 		await get_tree().create_timer(0.5).timeout
-		await _do_attack(false, randi() % _attacks_enemy.size())
+		if not await _tick_status(false):
+			await _do_attack(false, randi() % _attacks_enemy.size())
 	else:
-		await _do_attack(false, randi() % _attacks_enemy.size())
+		if not await _tick_status(false):
+			await _do_attack(false, randi() % _attacks_enemy.size())
 		if _state == State.BATTLE_OVER:
 			return
 		await get_tree().create_timer(0.5).timeout
-		await _do_attack(true,  player_atk_idx)
+		if not await _tick_status(true):
+			await _do_attack(true, player_atk_idx)
 
 	if _state != State.BATTLE_OVER:
 		await get_tree().create_timer(0.55).timeout
 		_start_player_turn()
 
-## player_is_attacker = true: player attacks enemy; false: enemy attacks player
-func _do_attack(player_is_attacker: bool, atk_idx: int) -> void:
-	var attack_script     = _attacks_player[atk_idx] if player_is_attacker else _attacks_enemy[atk_idx]
-	var attacker_stats := _stats_player  if player_is_attacker else _stats_enemy
-	var defender_stats := _stats_enemy   if player_is_attacker else _stats_player
-	var attacker_view     = _view_player  if player_is_attacker else _view_enemy
-	var defender_view     = _view_enemy   if player_is_attacker else _view_player
-	var attacker_name  := _name_player   if player_is_attacker else _name_enemy
+# Returns true when the actor's turn should be skipped (sleep / paralysis).
+func _tick_status(is_player: bool) -> bool:
+	var status: Dictionary = _status_player if is_player else _status_enemy
+	if status.is_empty():
+		return false
+	var id: String = status["id"]
+	var effect_script = EffectReg.get_script(id)
+	if not effect_script:
+		return false
+	var max_hp := _stats_player["max_hp"] if is_player else _stats_enemy["max_hp"]
+	var cur_hp := _hp_player              if is_player else _hp_enemy
+	var fname  := _name_player            if is_player else _name_enemy
+	var result: Dictionary = effect_script.tick(cur_hp, max_hp, status)
+	for key in result:
+		if (key as String).begins_with("_"):
+			status[key] = result[key]
+	if is_player:
+		_status_player = status
+	else:
+		_status_enemy = status
+	var dmg: int = result.get("damage", 0)
+	if dmg > 0:
+		_show_message(result.get("message", "%s took status damage!") % fname)
+		if is_player:
+			_hp_player = maxi(0, _hp_player - dmg)
+			_bar_player.value = float(_hp_player)
+		else:
+			_hp_enemy = maxi(0, _hp_enemy - dmg)
+			_bar_enemy.value = float(_hp_enemy)
+		_update_hp_labels()
+		if is_player:
+			await _view_player.play_hit_anim()
+		else:
+			await _view_enemy.play_hit_anim()
+		await get_tree().create_timer(0.4).timeout
+		if is_player and _hp_player <= 0:
+			_show_message("%s fainted from status!  %s wins!" % [_name_player, _name_enemy])
+			_state = State.BATTLE_OVER
+			_return_btn.visible = true
+			return true
+		if not is_player and _hp_enemy <= 0:
+			_show_message("%s fainted from status!  %s wins!" % [_name_enemy, _name_player])
+			_state = State.BATTLE_OVER
+			_return_btn.visible = true
+			return true
+	if result.get("cured", false):
+		var eff_name: String = effect_script.get_name() if effect_script.has_method("get_name") else id
+		_show_message("%s recovered from %s!" % [fname, eff_name])
+		if is_player:
+			_status_player = {}
+		else:
+			_status_enemy = {}
+		_update_hp_labels()
+		await get_tree().create_timer(0.5).timeout
+	return result.get("skip_turn", false)
 
-	_show_message("%s used %s!" % [attacker_name, attack_script.get_name()])
+func _do_attack(player_is_attacker: bool, atk_idx: int) -> void:
+	var attack: Dictionary = _attacks_player[atk_idx] if player_is_attacker else _attacks_enemy[atk_idx]
+	var attacker_stats := _stats_player if player_is_attacker else _stats_enemy
+	var defender_stats := _stats_enemy  if player_is_attacker else _stats_player
+	var attacker_view  = _view_player   if player_is_attacker else _view_enemy
+	var defender_view  = _view_enemy    if player_is_attacker else _view_player
+	var attacker_name  := _name_player  if player_is_attacker else _name_enemy
+	var defender_name  := _name_enemy   if player_is_attacker else _name_player
+
+	_show_message("%s used %s!" % [attacker_name, attack["name"]])
 	await get_tree().process_frame
 
-	# Lunge animation — player lunges right (+1), enemy lunges left (-1)
 	var dir := 1.0 if player_is_attacker else -1.0
 	await attacker_view.play_attack_anim(dir)
 
-	var result: Dictionary = attack_script.execute(attacker_stats, defender_stats)
+	var result: Dictionary = AttackData.execute(attack, attacker_stats, defender_stats)
 
 	if not result["hit"]:
 		_show_message(result["message"])
 		await get_tree().create_timer(0.7).timeout
 		return
 
-	var dmg: int   = result["damage"]
-	var extra: String = result["message"]
-	var msg := "Dealt %d damage!%s" % [dmg, ("  " + extra) if extra != "" else ""]
-	_show_message("%s used %s!\n%s" % [attacker_name, attack_script.get_name(), msg])
+	var dmg: int = result["damage"]
+	var eff_msg: String = result.get("message", "")
+	_show_message("%s used %s!\nDealt %d damage!%s" % [
+		attacker_name, attack["name"], dmg,
+		("  " + eff_msg) if eff_msg != "" else ""])
 
 	if player_is_attacker:
 		_hp_enemy = maxi(0, _hp_enemy - dmg)
@@ -257,6 +342,26 @@ func _do_attack(player_is_attacker: bool, atk_idx: int) -> void:
 	_update_hp_labels()
 
 	await defender_view.play_hit_anim()
+
+	# Apply status effect if rolled and target doesn't already have one
+	var apply_eff: Dictionary = result.get("apply_effect", {})
+	if not apply_eff.is_empty():
+		var target_has_status: bool = not _status_enemy.is_empty() if player_is_attacker \
+			else not _status_player.is_empty()
+		if not target_has_status:
+			var new_status := { "id": apply_eff["id"] }
+			if apply_eff["id"] == "sleep":
+				new_status["_sleep_turns"] = randi_range(2, 3)
+			if apply_eff["id"] == "poison":
+				new_status["_poison_turn"] = 1
+			if player_is_attacker:
+				_status_enemy = new_status
+			else:
+				_status_player = new_status
+			var icon: String = EffectReg.get_icon(apply_eff["id"])
+			_show_message("%s became %s! %s" % [defender_name, apply_eff["id"], icon])
+			_update_hp_labels()
+			await get_tree().create_timer(0.7).timeout
 
 	if player_is_attacker and _hp_enemy <= 0:
 		_show_message("%s fainted!  %s wins! 🎉" % [_name_enemy, _name_player])
@@ -270,8 +375,10 @@ func _do_attack(player_is_attacker: bool, atk_idx: int) -> void:
 
 # ── UI helpers ─────────────────────────────────────────────────────────────────
 func _update_hp_labels() -> void:
-	_lbl_enemy.text  = "%s   HP: %d / %d" % [_name_enemy,  _hp_enemy,  _stats_enemy["max_hp"]]
-	_lbl_player.text = "%s   HP: %d / %d" % [_name_player, _hp_player, _stats_player["max_hp"]]
+	var se := EffectReg.get_icon(_status_enemy.get("id",  "")) if not _status_enemy.is_empty()  else ""
+	var sp := EffectReg.get_icon(_status_player.get("id", "")) if not _status_player.is_empty() else ""
+	_lbl_enemy.text  = "%s%s   HP: %d / %d" % [_name_enemy,  se, _hp_enemy,  _stats_enemy["max_hp"]]
+	_lbl_player.text = "%s%s   HP: %d / %d" % [_name_player, sp, _hp_player, _stats_player["max_hp"]]
 
 func _show_message(text: String) -> void:
 	_lbl_message.text = text
@@ -283,4 +390,6 @@ func _set_buttons_enabled(enabled: bool) -> void:
 func _on_return_pressed() -> void:
 	GameState.fighter_a = {}
 	GameState.fighter_b = {}
+	GameState.moveset_a = []
+	GameState.moveset_b = []
 	get_tree().change_scene_to_file("res://scenes/main.tscn")

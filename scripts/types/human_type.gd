@@ -17,6 +17,17 @@ static func make_attacks() -> Array:
 		load("res://scripts/attacks/laser_attack.gd"),
 	]
 
+static func get_resistances() -> Dictionary:
+	return {
+		"normal":   1.0,
+		"fire":     1.5,   # slightly weak
+		"electric": 1.0,
+		"water":    1.0,
+		"dark":     1.5,   # slightly weak
+		"nature":   1.0,
+		"ice":      1.0,
+	}
+
 static func get_constraints() -> Dictionary:
 	return {
 		"has_horns":   { "type": "bool" },                               # optional — random

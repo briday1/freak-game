@@ -16,6 +16,17 @@ static func make_attacks() -> Array:
 		load("res://scripts/attacks/bite_attack.gd"),
 	]
 
+static func get_resistances() -> Dictionary:
+	return {
+		"water":    0.5,   # resistant
+		"electric": 2.0,   # weak
+		"fire":     1.0,
+		"normal":   1.0,
+		"dark":     1.5,   # slightly weak
+		"nature":   1.0,
+		"ice":      1.0,
+	}
+
 static func get_constraints() -> Dictionary:
 	return {
 		"goofiness":    { "type": "float", "min": 0.75, "max": 1.0 },
