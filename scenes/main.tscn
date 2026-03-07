@@ -1,0 +1,106 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/creature_view.gd" id="2_creature"]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_main")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="TitleLabel" type="Label" parent="CanvasLayer/VBoxContainer"]
+text = "🧬 Silly Genetic Creatures"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 28
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/VBoxContainer"]
+size_flags_vertical = 3
+
+[node name="PanelA" type="Panel" parent="CanvasLayer/VBoxContainer/HBoxContainer"]
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelA"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelA/VBoxContainer"]
+text = "Parent A"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelA/VBoxContainer"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelA/VBoxContainer/SubViewportContainer"]
+size = Vector2i(300, 450)
+
+[node name="CreatureViewA" type="Node2D" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelA/VBoxContainer/SubViewportContainer/SubViewport"]
+script = ExtResource("2_creature")
+
+[node name="PanelB" type="Panel" parent="CanvasLayer/VBoxContainer/HBoxContainer"]
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelB"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelB/VBoxContainer"]
+text = "Parent B"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelB/VBoxContainer"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelB/VBoxContainer/SubViewportContainer"]
+size = Vector2i(300, 450)
+
+[node name="CreatureViewB" type="Node2D" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelB/VBoxContainer/SubViewportContainer/SubViewport"]
+script = ExtResource("2_creature")
+
+[node name="PanelC" type="Panel" parent="CanvasLayer/VBoxContainer/HBoxContainer"]
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelC"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelC/VBoxContainer"]
+text = "Child"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelC/VBoxContainer"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelC/VBoxContainer/SubViewportContainer"]
+size = Vector2i(300, 450)
+
+[node name="CreatureViewC" type="Node2D" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelC/VBoxContainer/SubViewportContainer/SubViewport"]
+script = ExtResource("2_creature")
+
+[node name="HBoxContainerButtons" type="HBoxContainer" parent="CanvasLayer/VBoxContainer"]
+alignment = 1
+custom_minimum_size = Vector2(0, 80)
+theme_override_constants/separation = 20
+
+[node name="NewParentsButton" type="Button" parent="CanvasLayer/VBoxContainer/HBoxContainerButtons"]
+custom_minimum_size = Vector2(200, 50)
+text = "🧬 New Parents"
+
+[node name="BreedButton" type="Button" parent="CanvasLayer/VBoxContainer/HBoxContainerButtons"]
+custom_minimum_size = Vector2(200, 50)
+text = "💞 Breed"
+
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/HBoxContainerButtons/NewParentsButton" to="." method="_new_parents"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/HBoxContainerButtons/BreedButton" to="." method="_breed"]
