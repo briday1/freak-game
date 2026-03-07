@@ -35,7 +35,9 @@ jobs:
 
       - name: Install butler
         run: |
-          curl -sL -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          curl -sL -o butler.zip \
+            "$(curl -s https://api.github.com/repos/itchio/butler/releases/latest \
+               | python3 -c "import sys,json; [print(a['browser_download_url']) for a in json.load(sys.stdin)['assets'] if 'linux-amd64' in a['name']]")"
           unzip -q butler.zip
           chmod +x butler
 
