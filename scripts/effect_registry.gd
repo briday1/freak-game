@@ -6,16 +6,16 @@ const _PATHS: Dictionary = {
 	"paralysis": "res://scripts/effects/paralysis_effect.gd",
 }
 
-static func get_script(id: String):
+static func load_effect(id: String):
 	return load(_PATHS[id]) if _PATHS.has(id) else null
 
 static func all_ids() -> Array:
 	return _PATHS.keys()
 
 static func get_icon(id: String) -> String:
-	var s = get_script(id)
+	var s = load_effect(id)
 	return s.get_icon() if s else "?"
 
 static func get_color(id: String) -> Color:
-	var s = get_script(id)
+	var s = load_effect(id)
 	return s.get_color() if s else Color.WHITE

@@ -255,12 +255,12 @@ func _tick_status(is_player: bool) -> bool:
 	if status.is_empty():
 		return false
 	var id: String = status["id"]
-	var effect_script = EffectReg.get_script(id)
+	var effect_script = EffectReg.load_effect(id)
 	if not effect_script:
 		return false
-	var max_hp := _stats_player["max_hp"] if is_player else _stats_enemy["max_hp"]
-	var cur_hp := _hp_player              if is_player else _hp_enemy
-	var fname  := _name_player            if is_player else _name_enemy
+	var max_hp: int = _stats_player["max_hp"] if is_player else _stats_enemy["max_hp"]
+	var cur_hp: int = _hp_player              if is_player else _hp_enemy
+	var fname: String = _name_player          if is_player else _name_enemy
 	var result: Dictionary = effect_script.tick(cur_hp, max_hp, status)
 	for key in result:
 		if (key as String).begins_with("_"):

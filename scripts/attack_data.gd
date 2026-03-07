@@ -76,8 +76,8 @@ static func combine(a: Dictionary, b: Dictionary) -> Dictionary:
 	var combined_power    := maxi(5, int((pa + pb) * 0.5 * randf_range(0.9, 1.1)))
 	var combined_accuracy := clampf((float(a["accuracy"]) + float(b["accuracy"])) * 0.5 - 0.03, 0.5, 1.0)
 	# Type from higher-power source
-	var combined_type    := a["type"]    if pa >= pb else b["type"]
-	var combined_element := a["element"] if pa >= pb else b["element"]
+	var combined_type: String    = a["type"]    if pa >= pb else b["type"]
+	var combined_element: String = a["element"] if pa >= pb else b["element"]
 
 	# Merge effects
 	var eff_map: Dictionary = {}

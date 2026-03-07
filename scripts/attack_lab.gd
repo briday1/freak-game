@@ -144,8 +144,8 @@ func _build_ui() -> void:
 	sel_bg.add_child(_lbl_selected)
 
 	# ── Moveset panels (right) ─────────────────────────────────────────────────
-	var name_a := GameState.fighter_a.get("type", "Fighter A").capitalize()
-	var name_b := GameState.fighter_b.get("type", "Fighter B").capitalize()
+	var name_a: String = (GameState.fighter_a.get("type", "Fighter A") as String).capitalize()
+	var name_b: String = (GameState.fighter_b.get("type", "Fighter B") as String).capitalize()
 
 	_build_moveset_panel(canvas, name_a, 750.0, 182.0, true)
 	_build_moveset_panel(canvas, name_b, 750.0, 418.0, false)
