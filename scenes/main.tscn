@@ -32,6 +32,11 @@ text = "Parent A"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 18
 
+[node name="TypePickerA" type="OptionButton" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelA/VBoxContainer"]
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(0, 36)
+alignment = 1
+
 [node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelA/VBoxContainer"]
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -54,6 +59,11 @@ anchor_bottom = 1.0
 text = "Parent B"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 18
+
+[node name="TypePickerB" type="OptionButton" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelB/VBoxContainer"]
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(0, 36)
+alignment = 1
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasLayer/VBoxContainer/HBoxContainer/PanelB/VBoxContainer"]
 size_flags_horizontal = 3
@@ -104,3 +114,5 @@ text = "💞 Breed"
 
 [connection signal="pressed" from="CanvasLayer/VBoxContainer/HBoxContainerButtons/NewParentsButton" to="." method="_new_parents"]
 [connection signal="pressed" from="CanvasLayer/VBoxContainer/HBoxContainerButtons/BreedButton" to="." method="_breed"]
+[connection signal="item_selected" from="CanvasLayer/VBoxContainer/HBoxContainer/PanelA/VBoxContainer/TypePickerA" to="." method="_on_type_picker_a_selected"]
+[connection signal="item_selected" from="CanvasLayer/VBoxContainer/HBoxContainer/PanelB/VBoxContainer/TypePickerB" to="." method="_on_type_picker_b_selected"]
