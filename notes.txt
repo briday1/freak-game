@@ -1,0 +1,9 @@
+- dungeon explorer roguelight
+- You can decide to go down another floor in the dungeon
+- Each layer you may encounger different types get items/etc 
+- costs money to get each layer 
+- You start with NOTHING, just like a grey blob that can't do much 
+- there are some special things you need to get to help you progress
+
+- You can get upgrades to your home base/apply_lab 
+- different types of scientists that can do more for you
