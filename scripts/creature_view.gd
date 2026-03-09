@@ -12,8 +12,9 @@ extends Node2D
 #  them to this array.  No code changes needed here.
 # ─────────────────────────────────────────────────────────────────────────────
 
-const PC          := preload("res://scripts/pixel_canvas.gd")
-const PIXEL_SCALE := 4  # 48 × 4 = 192-px sprite on screen
+const PC             := preload("res://scripts/pixel_canvas.gd")
+const SpritePainter  := preload("res://scripts/sprite_painter.gd")
+const PIXEL_SCALE    := 4  # 48 × 4 = 192-px sprite on screen
 
 @export var traits: Array = []
 
@@ -152,10 +153,7 @@ func _clamp_genome() -> void:
 func _repaint() -> void:
 	if genome.is_empty() or _sprite == null:
 		return
-	var base := PC.make_image()
-	for t in _sorted_traits():
-		_composite(base, t.paint(genome))
-	_sprite.texture = ImageTexture.create_from_image(base)
+	_sprite.texture = ImageTexture.create_from_image(SpritePainter.paint(genome))
 
 ## Returns traits sorted back-to-front for correct z-order (painter's algorithm).
 func _sorted_traits() -> Array:
