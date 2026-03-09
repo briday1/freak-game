@@ -121,4 +121,3 @@ func _breed() -> void:
 					var hi: Color = s["max"]
 					child[key] = Color(randf_range(lo.r, hi.r), randf_range(lo.g, hi.g), randf_range(lo.b, hi.b))
 	creature_c.set_genome(child)
-

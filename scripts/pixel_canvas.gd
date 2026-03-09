@@ -17,6 +17,33 @@ const BY          := 38   # portrait body anchor
 static func make_image() -> Image:
 	return Image.create(CANVAS_SIZE, CANVAS_SIZE, false, Image.FORMAT_RGBA8)
 
+## Stamp a pixel-art template onto img at (ox, oy).
+## rows is an Array of Strings. Each character maps to a palette color:
+##   'B' body   'b' belly  's' shadow  'H' highlight  'A' accent
+##   'S' spot   'O' outline  'W' white  'K' black  '.' transparent
+## pal is the dict from PC.palette(). Any unknown char = transparent.
+static func stamp(img: Image, ox: int, oy: int, rows: Array, pal: Dictionary) -> void:
+	const MAP := {
+		'B': "body", 'b': "belly", 's': "shadow", 'H': "highlight",
+		'A': "accent", 'S': "spot", 'O': "outline",
+	}
+	for row: int in range(rows.size()):
+		var line: String = rows[row]
+		for col: int in range(line.length()):
+			var ch: String = line[col]
+			if ch == '.':
+				continue
+			var c: Color
+			if ch == 'W':
+				c = Color.WHITE
+			elif ch == 'K':
+				c = Color.BLACK
+			elif MAP.has(ch):
+				c = pal[MAP[ch]]
+			else:
+				continue
+			blend(img, ox + col, oy + row, c)
+
 # ── Colour palette ─────────────────────────────────────────────────────────────
 
 ## Derive a rich, vivid, harmonious palette from just the genome colour keys.
