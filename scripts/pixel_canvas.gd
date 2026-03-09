@@ -1,13 +1,15 @@
 # Static helpers for painting pixel art onto a Godot Image.
 # Canvas is CANVAS_SIZE × CANVAS_SIZE; callers work in 0-(CANVAS_SIZE-1) space.
 #
-# Body convention  (all traits use these constants):
-#   CX = 24   horizontal centre
-#   BY = 38   body vertical centre (mid-mass, NOT bottom)
+# Layout convention (portrait sprite — head dominates upper canvas):
+#   CX      = 24   horizontal centre
+#   HEAD_CY = 18   head centre y — upper ~40% of canvas
+#   BY      = 38   body lower-torso centre
 
 const CANVAS_SIZE := 48
 const CX          := 24
-const BY          := 38
+const HEAD_CY     := 18   # portrait head anchor
+const BY          := 38   # portrait body anchor
 
 # ── Factory ────────────────────────────────────────────────────────────────────
 

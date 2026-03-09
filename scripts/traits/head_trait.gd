@@ -8,16 +8,13 @@ func get_schema() -> Dictionary:
 		"head_size": { "type": "float", "min": 20.0, "max": 70.0 },
 	}
 
-## Returns head center as (cx, cy) in pixel-canvas space.
+## Head is always anchored at the portrait head centre — dominates upper canvas.
 static func head_center(genome: Dictionary) -> Vector2i:
-	var bsz := BodyTrait.body_half_size(genome)
-	var body_top: int = PC.BY - bsz.y
-	var r: int = int(remap(genome["head_size"] as float, 20.0, 70.0, 6.0, 13.0))
-	return Vector2i(PC.CX, body_top - 2 - r)
+	return Vector2i(PC.CX, PC.HEAD_CY)
 
-## Effective head radius in pixels (used by eyes/mouth/horns).
+## Head radius — large so the face fills the sprite (Pokemon style).
 static func head_radius(genome: Dictionary) -> int:
-	return int(remap(genome["head_size"] as float, 20.0, 70.0, 6.0, 13.0))
+	return int(remap(genome["head_size"] as float, 20.0, 70.0, 10.0, 14.0))
 
 func paint(genome: Dictionary) -> Image:
 	var img := PC.make_image()
@@ -25,14 +22,6 @@ func paint(genome: Dictionary) -> Image:
 	var hs: float  = genome["head_size"] as float
 	var r: int     = head_radius(genome)
 	var hc         := head_center(genome)
-
-	# Neck — tapered connection from head to body
-	var bsz := BodyTrait.body_half_size(genome)
-	var body_top: int = PC.BY - bsz.y
-	var neck_w: int   = maxi(2, r / 3)
-	var neck_top: int = hc.y + r - 1
-	var neck_h: int   = maxi(1, body_top - neck_top + 2)
-	PC.fill_rect(img, hc.x - neck_w, neck_top, neck_w * 2, neck_h, pal["body"])
 
 	if hs >= 52.0:
 		# BOXY: wide rectangular skull — intimidating

@@ -19,8 +19,8 @@ func paint(genome: Dictionary) -> Image:
 	var bh: int  = bsz.y
 	var cx: int  = PC.CX
 	var cy: int  = PC.BY
-	# Much bigger span — 13–26 px from body edge
-	var span: int     = int(remap(genome["wing_span"] as float, 0.7, 1.5, 10.0, 30.0))
+	# Span from body edge — clamped to stay on 48px canvas
+	var span: int     = int(remap(genome["wing_span"] as float, 0.7, 1.5, 4.0, 11.0))
 	var attach_y: int = cy - bh + 3
 	var pal := PC.palette(genome)
 	var feathers: bool = genome.get("wing_feathers", false)

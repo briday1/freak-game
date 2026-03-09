@@ -21,8 +21,8 @@ func get_schema() -> Dictionary:
 ## Returns body half-size as Vector2i(bw, bh) in canvas pixels.
 static func body_half_size(genome: Dictionary) -> Vector2i:
 	return Vector2i(
-		int(remap(genome["body_width"]  as float, 40.0, 120.0, 5.0, 11.0)),
-		int(remap(genome["body_height"] as float, 60.0, 160.0, 4.0,  8.0)))
+		int(remap(genome["body_width"]  as float, 40.0, 120.0, 8.0, 14.0)),
+		int(remap(genome["body_height"] as float, 60.0, 160.0, 3.0,  6.0)))
 
 func paint(genome: Dictionary) -> Image:
 	var img := PC.make_image()
@@ -33,6 +33,14 @@ func paint(genome: Dictionary) -> Image:
 	var round: float = genome["roundness"] as float
 	var str: float   = genome["strength"]  as float
 	var pat: float   = genome.get("pattern", 0.0) as float
+
+	# ── Neck connector ────────────────────────────────────────────────────────
+	var hr: int       = HeadTrait.head_radius(genome)
+	var neck_top: int = PC.HEAD_CY + hr
+	var neck_bot: int = BY - bh
+	var neck_w: int   = maxi(2, bw / 3)
+	if neck_bot > neck_top:
+		PC.fill_rect(img, CX - neck_w, neck_top, neck_w * 2, neck_bot - neck_top, pal["body"])
 
 	# ── 1. Base silhouette ────────────────────────────────────────────────────
 	if round >= 0.65:

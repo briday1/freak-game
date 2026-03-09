@@ -16,7 +16,7 @@ func paint(genome: Dictionary) -> Image:
 	var bh: int  = bsz.y
 	var cx: int  = PC.CX
 	var cy: int  = PC.BY
-	var al_px: int = int(remap(genome["arm_length"] as float, 20.0, 70.0, 4.0, 16.0))
+	var al_px: int = int(remap(genome["arm_length"] as float, 20.0, 70.0, 3.0, 10.0))
 	var arm_y: int = cy - bh + bh / 3
 	var pal := PC.palette(genome)
 	var claws: bool = genome.get("has_claws", false)

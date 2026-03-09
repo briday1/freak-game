@@ -17,7 +17,7 @@ func paint(genome: Dictionary) -> Image:
 	var bh: int  = bsz.y
 	var cx: int  = PC.CX
 	var cy: int  = PC.BY
-	var ll_px: int  = int(remap(genome["leg_length"] as float, 20.0, 80.0, 5.0, 18.0))
+	var ll_px: int  = int(remap(genome["leg_length"] as float, 20.0, 80.0, 2.0,  5.0))
 	var base_y: int = cy + bh
 	var pal := PC.palette(genome)
 	var quad: bool = genome.get("extra_legs", false)

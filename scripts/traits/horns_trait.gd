@@ -16,7 +16,7 @@ func paint(genome: Dictionary) -> Image:
 	var hc := HeadTrait.head_center(genome)
 	var hr: int      = HeadTrait.head_radius(genome)
 	var hs: float    = genome["head_size"] as float
-	var horn_h: int  = int(remap(genome["horn_size"] as float, 8.0, 40.0, 3.0, 13.0))
+	var horn_h: int  = int(remap(genome["horn_size"] as float, 8.0, 40.0, 2.0,  8.0))
 	var pal := PC.palette(genome)
 	var col: Color = pal["accent"]
 	var hi: Color  = pal["highlight"]
@@ -28,13 +28,12 @@ func paint(genome: Dictionary) -> Image:
 		var tip_y: int  = base_y - horn_h
 		var hw: int     = maxi(1, horn_h / 3)
 
-		if hs < 18.0:
-			# NUBS: small stubby rectangles
+		if hs < 35.0:
+			# NUBS: small stubby horns
 			PC.fill_rect(img, bx - 1, tip_y, 3, horn_h, col)
-			# Tip highlight
 			PC.blend(img, bx, tip_y, hi)
 
-		elif hs < 30.0:
+		elif hs < 52.0:
 			# SWEPT: wide polygon swept outward
 			var sweep: int = horn_h * 2 / 3
 			PC.fill_polygon(img, [

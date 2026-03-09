@@ -19,7 +19,7 @@ func paint(genome: Dictionary) -> Image:
 	var bh: int  = bsz.y
 	var cx: int  = PC.CX
 	var cy: int  = PC.BY
-	var tl_px: int = int(remap(genome["tail_length"] as float, 20.0, 80.0, 6.0, 22.0))
+	var tl_px: int = int(remap(genome["tail_length"] as float, 20.0, 80.0, 5.0, 14.0))
 	var curl: float = genome["tail_curl"] as float
 	var pal := PC.palette(genome)
 
