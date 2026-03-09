@@ -9,12 +9,13 @@ func get_schema() -> Dictionary:
 		"has_claws":  { "type": "bool" },
 	}
 
-func paint(img: Image, genome: Dictionary) -> void:
+func paint(genome: Dictionary) -> Image:
+	var img := PC.make_image()
 	var bsz := BodyTrait.body_half_size(genome)
 	var bw: int  = bsz.x
 	var bh: int  = bsz.y
-	var cx: int  = 32
-	var cy: int  = 40
+	var cx: int  = PC.CX
+	var cy: int  = PC.BY
 	var al_px: int = int(remap(genome["arm_length"] as float, 20.0, 70.0, 4.0, 16.0))
 	var arm_y: int = cy - bh + bh / 3
 	var pal := PC.palette(genome)
@@ -47,4 +48,4 @@ func paint(img: Image, genome: Dictionary) -> void:
 			PC.fill_circle(img, ex, ey, 2, pal["body"])
 			var sh: Color = pal["shine"]; sh.a = 0.7
 			PC.blend(img, ex - 1, ey - 1, sh)
-
+	return img

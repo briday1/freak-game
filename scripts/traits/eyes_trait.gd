@@ -11,7 +11,8 @@ func get_schema() -> Dictionary:
 			"min": Color(0.0, 0.0, 0.0), "max": Color(1.0, 1.0, 1.0) },
 	}
 
-func paint(img: Image, genome: Dictionary) -> void:
+func paint(genome: Dictionary) -> Image:
+	var img := PC.make_image()
 	var hc: Vector2i = HeadTrait.head_center(genome)
 	var r: int       = HeadTrait.head_radius(genome)
 	var esp: int     = int(remap(genome["eye_spacing"] as float, 5.0, 30.0, 1.0, 5.0))
@@ -63,4 +64,5 @@ func paint(img: Image, genome: Dictionary) -> void:
 				var lx: int = hc.x + side * (esp + big + 1)
 				PC.line(img, lx, eye_y - big, lx + side, eye_y - big - 2, col.darkened(0.15))
 
+	return img
 

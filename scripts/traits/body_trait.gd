@@ -21,10 +21,11 @@ func get_schema() -> Dictionary:
 ## Returns body half-size as Vector2i(bw, bh) in canvas pixels.
 static func body_half_size(genome: Dictionary) -> Vector2i:
 	return Vector2i(
-		int(remap(genome["body_width"]  as float, 40.0, 120.0, 6.0, 15.0)),
-		int(remap(genome["body_height"] as float, 60.0, 160.0, 7.0, 14.0)))
+		int(remap(genome["body_width"]  as float, 40.0, 120.0, 5.0, 11.0)),
+		int(remap(genome["body_height"] as float, 60.0, 160.0, 4.0,  8.0)))
 
-func paint(img: Image, genome: Dictionary) -> void:
+func paint(genome: Dictionary) -> Image:
+	var img := PC.make_image()
 	var pal: Dictionary = PC.palette(genome)
 	var bsz := body_half_size(genome)
 	var bw: int   = bsz.x
@@ -118,6 +119,7 @@ func paint(img: Image, genome: Dictionary) -> void:
 		PC.outline_ellipse(img, CX, BY, bw + (2 if round < 0.65 else 0), bh, pal["outline"])
 	else:
 		PC.outline_rect(img, CX - bw, BY - bh, bw * 2, bh * 2, pal["outline"])
+	return img
 
 static func _inside_body(px: int, py: int, bw: int, bh: int, round: float) -> bool:
 	if round >= 0.30:

@@ -11,7 +11,8 @@ func get_schema() -> Dictionary:
 		"bill_tip_offset": { "type": "float", "min": 0.0,  "max":  0.0 },  # duck overrides; tip skew
 	}
 
-func paint(img: Image, genome: Dictionary) -> void:
+func paint(genome: Dictionary) -> Image:
+	var img := PC.make_image()
 	var hc: Vector2i  = HeadTrait.head_center(genome)
 	var r: int        = HeadTrait.head_radius(genome)
 	var mouth_y: int  = hc.y + r - 1
@@ -40,7 +41,7 @@ func paint(img: Image, genome: Dictionary) -> void:
 			Vector2(hc.x + skew,       mouth_y + bh_px + 1),
 		], acc)
 		PC.line(img, hc.x - bw_px, mouth_y, hc.x + skew, mouth_y + bh_px, acc.darkened(0.4))
-		return
+		return img
 
 	# ── Normal mouth ───────────────────────────────────────────────────────────
 	if goofy < 0.25:
@@ -66,3 +67,4 @@ func paint(img: Image, genome: Dictionary) -> void:
 			var tx: int = hc.x - mw / 2 + i
 			if i % 2 == 0:
 				PC.blend(img, tx, mouth_y + 1, Color.WHITE)
+	return img

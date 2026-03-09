@@ -29,9 +29,9 @@ func _ready() -> void:
 	_sprite = Sprite2D.new()
 	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_sprite.scale          = Vector2(PIXEL_SCALE, PIXEL_SCALE)
-	# Center in the 300×450 SubViewport. CANVAS_SIZE=64, scale=4 → 256px sprite.
+	# Center in the 300×450 SubViewport. CANVAS_SIZE=48, scale=4 → 192px sprite.
 	# Offset slightly upward so legs don't clip the bottom.
-	_sprite.position       = Vector2(150, 210)
+	_sprite.position       = Vector2(150, 200)
 	add_child(_sprite)
 
 	_base_position = position
@@ -151,7 +151,38 @@ func _clamp_genome() -> void:
 func _repaint() -> void:
 	if genome.is_empty() or _sprite == null:
 		return
-	var img := PC.make_image()
+	var base := PC.make_image()
+	for t in _sorted_traits():
+		_composite(base, t.paint(genome))
+	_sprite.texture = ImageTexture.create_from_image(base)
+
+## Returns traits sorted back-to-front for correct z-order (painter's algorithm).
+func _sorted_traits() -> Array:
+	var order: Array = []
 	for t in traits:
-		t.paint(img, genome)
-	_sprite.texture = ImageTexture.create_from_image(img)
+		if t is TailTrait:  order.append(t)
+	for t in traits:
+		if t is WingsTrait: order.append(t)
+	for t in traits:
+		if t is BodyTrait:  order.append(t)
+	for t in traits:
+		if t is LegsTrait:  order.append(t)
+	for t in traits:
+		if t is ArmsTrait:  order.append(t)
+	for t in traits:
+		if t is HeadTrait:  order.append(t)
+	for t in traits:
+		if t is MouthTrait: order.append(t)
+	for t in traits:
+		if t is EyesTrait:  order.append(t)
+	for t in traits:
+		if t is HornsTrait: order.append(t)
+	return order
+
+## Alpha-composite a trait layer onto the base image.
+func _composite(base: Image, layer: Image) -> void:
+	for y: int in range(layer.get_height()):
+		for x: int in range(layer.get_width()):
+			var c: Color = layer.get_pixel(x, y)
+			if c.a > 0.0:
+				PC.blend(base, x, y, c)

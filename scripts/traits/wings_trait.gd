@@ -10,14 +10,15 @@ func get_schema() -> Dictionary:
 		"wing_feathers": { "type": "bool" },
 	}
 
-func paint(img: Image, genome: Dictionary) -> void:
+func paint(genome: Dictionary) -> Image:
+	var img := PC.make_image()
 	if not genome.get("has_wings", false):
-		return
+		return img
 	var bsz := BodyTrait.body_half_size(genome)
 	var bw: int  = bsz.x
 	var bh: int  = bsz.y
-	var cx: int  = 32
-	var cy: int  = 40
+	var cx: int  = PC.CX
+	var cy: int  = PC.BY
 	# Much bigger span — 13–26 px from body edge
 	var span: int     = int(remap(genome["wing_span"] as float, 0.7, 1.5, 10.0, 30.0))
 	var attach_y: int = cy - bh + 3
@@ -67,3 +68,4 @@ func paint(img: Image, genome: Dictionary) -> void:
 				PC.line(img, ax, attach_y, rx, ry, pal["outline"])
 			PC.line(img, ax, attach_y, tip_x, tip_y, pal["accent"])
 			PC.line(img, tip_x, tip_y, lo_x, lo_y, pal["accent"])
+	return img

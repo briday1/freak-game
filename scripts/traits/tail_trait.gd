@@ -10,14 +10,15 @@ func get_schema() -> Dictionary:
 		"tail_curl":   { "type": "float", "min":  0.0, "max":  1.0 },
 	}
 
-func paint(img: Image, genome: Dictionary) -> void:
+func paint(genome: Dictionary) -> Image:
+	var img := PC.make_image()
 	if not genome.get("has_tail", false):
-		return
+		return img
 	var bsz := BodyTrait.body_half_size(genome)
 	var bw: int  = bsz.x
 	var bh: int  = bsz.y
-	var cx: int  = 32
-	var cy: int  = 40
+	var cx: int  = PC.CX
+	var cy: int  = PC.BY
 	var tl_px: int = int(remap(genome["tail_length"] as float, 20.0, 80.0, 6.0, 22.0))
 	var curl: float = genome["tail_curl"] as float
 	var pal := PC.palette(genome)
@@ -77,4 +78,4 @@ func paint(img: Image, genome: Dictionary) -> void:
 			py = ny
 			angle += PI / float(maxi(3, tl_px))
 			radius += 1.1
-
+	return img

@@ -10,12 +10,13 @@ func get_schema() -> Dictionary:
 		"extra_legs":  { "type": "bool" },  # 4 legs when true
 	}
 
-func paint(img: Image, genome: Dictionary) -> void:
+func paint(genome: Dictionary) -> Image:
+	var img := PC.make_image()
 	var bsz := BodyTrait.body_half_size(genome)
 	var bw: int  = bsz.x
 	var bh: int  = bsz.y
-	var cx: int  = 32
-	var cy: int  = 40
+	var cx: int  = PC.CX
+	var cy: int  = PC.BY
 	var ll_px: int  = int(remap(genome["leg_length"] as float, 20.0, 80.0, 5.0, 18.0))
 	var base_y: int = cy + bh
 	var pal := PC.palette(genome)
@@ -55,4 +56,4 @@ func paint(img: Image, genome: Dictionary) -> void:
 			# T-foot
 			PC.line(img, lx - 3, ey, lx + 3, ey, pal["accent"])
 			PC.line(img, lx - 2, ey + 1, lx + 3, ey + 1, pal["shadow"])
-
+	return img

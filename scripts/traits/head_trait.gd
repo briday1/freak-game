@@ -11,15 +11,16 @@ func get_schema() -> Dictionary:
 ## Returns head center as (cx, cy) in pixel-canvas space.
 static func head_center(genome: Dictionary) -> Vector2i:
 	var bsz := BodyTrait.body_half_size(genome)
-	var body_top: int = 40 - bsz.y
-	var r: int = int(remap(genome["head_size"] as float, 20.0, 70.0, 4.0, 11.0))
-	return Vector2i(32, body_top - 2 - r)
+	var body_top: int = PC.BY - bsz.y
+	var r: int = int(remap(genome["head_size"] as float, 20.0, 70.0, 6.0, 13.0))
+	return Vector2i(PC.CX, body_top - 2 - r)
 
 ## Effective head radius in pixels (used by eyes/mouth/horns).
 static func head_radius(genome: Dictionary) -> int:
-	return int(remap(genome["head_size"] as float, 20.0, 70.0, 4.0, 11.0))
+	return int(remap(genome["head_size"] as float, 20.0, 70.0, 6.0, 13.0))
 
-func paint(img: Image, genome: Dictionary) -> void:
+func paint(genome: Dictionary) -> Image:
+	var img := PC.make_image()
 	var pal: Dictionary = PC.palette(genome)
 	var hs: float  = genome["head_size"] as float
 	var r: int     = head_radius(genome)
@@ -68,3 +69,4 @@ func paint(img: Image, genome: Dictionary) -> void:
 		var hi3: Color = pal["highlight"]; hi3.a = 0.30
 		PC.fill_ellipse(img, hc.x, hc.y + r / 2, r - 1, r / 2,     sh3)
 		PC.fill_ellipse(img, hc.x - r / 3, hc.y - r / 3, r / 2, r / 3, hi3)
+	return img

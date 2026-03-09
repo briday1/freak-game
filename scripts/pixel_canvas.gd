@@ -2,12 +2,12 @@
 # Canvas is CANVAS_SIZE × CANVAS_SIZE; callers work in 0-(CANVAS_SIZE-1) space.
 #
 # Body convention  (all traits use these constants):
-#   CX = 32   horizontal centre
-#   BY = 40   body vertical centre (mid-mass, NOT bottom)
+#   CX = 24   horizontal centre
+#   BY = 38   body vertical centre (mid-mass, NOT bottom)
 
-const CANVAS_SIZE := 64
-const CX          := 32
-const BY          := 40
+const CANVAS_SIZE := 48
+const CX          := 24
+const BY          := 38
 
 # ── Factory ────────────────────────────────────────────────────────────────────
 

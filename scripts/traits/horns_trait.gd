@@ -9,9 +9,10 @@ func get_schema() -> Dictionary:
 		"horn_size": { "type": "float", "min": 8.0, "max": 40.0 },
 	}
 
-func paint(img: Image, genome: Dictionary) -> void:
+func paint(genome: Dictionary) -> Image:
+	var img := PC.make_image()
 	if not genome.get("has_horns", false):
-		return
+		return img
 	var hc := HeadTrait.head_center(genome)
 	var hr: int      = HeadTrait.head_radius(genome)
 	var hs: float    = genome["head_size"] as float
@@ -62,4 +63,4 @@ func paint(img: Image, genome: Dictionary) -> void:
 			], hi)
 			# Dark outline on outer edge
 			PC.line(img, bx - hw, base_y, bx + curl_x, tip_y - 2, col.darkened(0.4))
-
+	return img
