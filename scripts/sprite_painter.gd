@@ -111,11 +111,44 @@ const HUMAN_ROWS: Array = [
 # ---- Paint ------------------------------------------------------------------
 
 ## Full-body portrait sprite for the creature genome.
-## Returns a 48x48 RGBA Image; replaces the old multi-trait compositing.
+## If genome contains _blend_type + _blend_weight, pixel-lerps two type stamps
+## so a bred creature looks like a genuine visual mix of both parents.
 static func paint(genome: Dictionary) -> Image:
-    var img := PC.make_image()
-    var pal := _pokemon_palette(genome)
-    var t: String = genome.get("_type", "human") as String
+    var pal        := _pokemon_palette(genome)
+    var t: String   = genome.get("_type", "human") as String
+    var t2: String  = genome.get("_blend_type", "") as String
+    var w: float    = clampf(genome.get("_blend_weight", 0.0) as float, 0.0, 1.0)
+
+    var img_a := PC.make_image()
+    _stamp_type(img_a, t, pal)
+
+    if t2 == "" or w <= 0.0:
+        return img_a
+
+    # Build a genome that uses blended colors for the secondary stamp too
+    var pal2 := _pokemon_palette(genome)
+    var img_b := PC.make_image()
+    _stamp_type(img_b, t2, pal2)
+
+    # Pixel-lerp: each pixel = lerp(a, b, w); transparent in one = use the other
+    var out := PC.make_image()
+    var sz := PC.CANVAS_SIZE
+    for y in range(sz):
+        for x in range(sz):
+            var ca: Color = img_a.get_pixel(x, y)
+            var cb: Color = img_b.get_pixel(x, y)
+            if ca.a <= 0.0 and cb.a <= 0.0:
+                continue
+            elif ca.a <= 0.0:
+                out.set_pixel(x, y, Color(cb.r, cb.g, cb.b, cb.a * w))
+            elif cb.a <= 0.0:
+                out.set_pixel(x, y, Color(ca.r, ca.g, ca.b, ca.a * (1.0 - w)))
+            else:
+                out.set_pixel(x, y, ca.lerp(cb, w))
+    return out
+
+## Stamp the sprite rows for a given type onto img.
+static func _stamp_type(img: Image, t: String, pal: Dictionary) -> void:
     match t:
         "duck":
             PC.stamp(img, 3, 2, DUCK_ROWS, pal)
@@ -123,7 +156,6 @@ static func paint(genome: Dictionary) -> Image:
             PC.stamp(img, 0, 0, DRAGON_ROWS, pal)
         _:
             PC.stamp(img, 6, 2, HUMAN_ROWS, pal)
-    return img
 
 ## 4-colour Pokemon-style palette derived from genome body/accent colours.
 ## Produces: outline (darkest), shadow, body (mid), belly (lightest), accent.

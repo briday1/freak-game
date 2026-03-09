@@ -72,8 +72,17 @@ func _breed() -> void:
 	var ga: Dictionary = creature_a.genome
 	var gb: Dictionary = creature_b.genome
 
-	# Child inherits one parent's type randomly; could also mutate to a third type.
-	var child_type: String = creature_a.creature_type if randf() < 0.5 else creature_b.creature_type
+	# Pick a primary type weighted by a random blend — 0.35..0.65 means neither
+	# parent fully dominates, so the child is a genuine visual hybrid.
+	var blend_weight: float = randf_range(0.30, 0.70)
+	var child_type: String
+	var blend_type: String
+	if randf() < 0.5:
+		child_type  = creature_a.creature_type
+		blend_type  = creature_b.creature_type
+	else:
+		child_type  = creature_b.creature_type
+		blend_type  = creature_a.creature_type
 	creature_c.set_type(child_type)
 
 	# Build a genome for the child's type, blending from parents where possible.
@@ -120,4 +129,7 @@ func _breed() -> void:
 					var lo: Color = s["min"]
 					var hi: Color = s["max"]
 					child[key] = Color(randf_range(lo.r, hi.r), randf_range(lo.g, hi.g), randf_range(lo.b, hi.b))
+	# Inject blend metadata so SpritePainter can lerp both type stamps together
+	child["_blend_type"]   = blend_type
+	child["_blend_weight"] = blend_weight
 	creature_c.set_genome(child)
