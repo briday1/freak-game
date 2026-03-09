@@ -16,72 +16,62 @@ static func head_center(genome: Dictionary) -> Vector2i:
 static func head_radius(genome: Dictionary) -> int:
 	return int(remap(genome["head_size"] as float, 20.0, 70.0, 10.0, 14.0))
 
-# Three head stamp templates — 19 wide, 15 tall, centred at (9, 7) within stamp.
-# Stamped so that pixel (9,7) lands on head_center().
-const HEAD_ROUND := [
-	"....OOOOOOOOO....",
-	"..OBBBBsBBBBBO...",
-	".OBBBBBsBBBBBBO..",
-	"OBBBBBBsBBBHBBBO.",
-	"OBBBBBBBBBBHHsBBO",
-	"OBBBBBBBBBBBHsBBO",
-	"OBBBBBBBBBBBBsBBO",
-	"OBBBBBBBBBBBBsBBO",
-	"OBBBBBbbbBBBBBBBO",
-	"OBBBBbbbbbBBBBBBO",
-	".OBBBbbbbbbBBBBO.",
-	".OBBBBBBBBBBBBOo.",
-	"..OBBBBBBBBBBBOO..",
-	"...OOOOOOOOOO....",
-	".................",
+# Duck head: round chubby ball, cheek pouches
+# 20 wide x 10 tall. Anchor: col 10, row 5 → stamp at (hc.x-10, hc.y-5)
+const HEAD_DUCK := [
+	"....OOOOOOOOOO......",
+	"...OBBBHHBBBsBo.....",
+	"..OBBBBHHBBBBsBo....",
+	"..OBBBBBBBBBBBBo....",
+	"..OBBBBBBBBBBBBo....",
+	".OBBbbbbbbbbBBBo....",
+	".OBBbbbbbbbbBBBo....",
+	"..OBBBBBBBBBBBo.....",
+	"...OOOOOOOOOOOO.....",
+	"....................",
 ]
-const HEAD_WIDE := [
-	"...OOOOOOOOOOOOO...",
-	".OBBBBsBBBBBBBBBO.",
-	"OBBBBBsBBBBBBBBBBO",
-	"OBBssssBBBBBBBBBBO",
-	"OBBBBBBBBBBBHHsBBO",
-	"OBBBBBBBBBBBBHsBBO",
-	"OBBBBBBBBBBBBBsBBO",
-	"OBBBBBBBBBBBBBsBBO",
-	"OBBBBBbbbbbBBBBBBO",
-	"OBBBBbbbbbbbBBBBBO",
-	".OBBBBbbbbbBBBBBO.",
-	".OOBBBBBBBBBBBBOo.",
-	"..OBBBBBBBBBBBBOO..",
-	"....OOOOOOOOOOO....",
-	"...................",
+# Dragon head: armored brow plates, wide jaw
+# 24 wide x 10 tall. Anchor: col 12, row 5
+const HEAD_DRAGON := [
+	"...AAOOOOOOOOOAAO...",
+	"..AAOBBBBBBBBBBAAO..",
+	"..AOBBBBBBBBBBBAO...",
+	"..OBBBBBBBBBBBBBo...",
+	"..OBBBBBBBBBBBBBo...",
+	"..OBBBBBBBBBBsBBo...",
+	"..OBBBBBBBBBBsBBo...",
+	"..OBBBbbbbbBBBBo....",
+	"...OOBBBBBBBBOo.....",
+	"....OOOOOOOOO.......",
 ]
-const HEAD_BEAN := [
-	"..OOOOOOOOOOO....",
-	".OBBBBsBBBBBBO...",
-	"OBBBBBsBBBBHBBO..",
-	"OBBBBBBBBBHHsBBO.",
-	"OBBBBBBBBBBHsBBO.",
-	"OBBBBBBBBBBBsBBO.",
-	"OBBBBBBBBBBBBsBO.",
-	"OBBBBBBBBBBBBsBO.",
-	"OABBBbbbBBBBBBBO.",
-	".OABbbbbbbbBBBO..",
-	"..OBBBBBBBBBBOo..",
-	"..OOOOOOOOOOO....",
-	".................",
-	".................",
-	".................",
+# Human head: smooth tall oval with hairline
+# 20 wide x 10 tall. Anchor: col 10, row 5
+const HEAD_HUMAN := [
+	"....OOOOOOOOOO......",
+	"...OSSSSSSSSSo......",
+	"..OBBBBHBBBBBBo.....",
+	"..OBBBBHBBBBBBo.....",
+	"..OBBBBBBBBBBBo.....",
+	"..OBBBBBBBBBBBo.....",
+	"..OBBBBBBBBBBBo.....",
+	"..OBBBBBBBBBBBo.....",
+	"...OOBBBBBBOOo......",
+	"....OOOOOOOO........",
 ]
 
 func paint(genome: Dictionary) -> Image:
 	var img := PC.make_image()
 	var pal: Dictionary = PC.palette(genome)
-	var hs: float = genome["head_size"] as float
 	var hc := head_center(genome)
+	var t: String = genome.get("_type", "human") as String
 	var tmpl: Array
-	if hs >= 52.0:
-		tmpl = HEAD_WIDE
-	elif hs <= 30.0:
-		tmpl = HEAD_BEAN
+	var ax: int
+	var ay: int
+	if t == "duck":
+		tmpl = HEAD_DUCK;  ax = 10; ay = 5
+	elif t == "dragon":
+		tmpl = HEAD_DRAGON; ax = 12; ay = 5
 	else:
-		tmpl = HEAD_ROUND
-	# Stamp centred: anchor pixel is col 9, row 7 of the template
-	PC.stamp(img, hc.x - 9, hc.y - 7, tmpl, pal)
+		tmpl = HEAD_HUMAN;  ax = 10; ay = 5
+	PC.stamp(img, hc.x - ax, hc.y - ay, tmpl, pal)
 	return img

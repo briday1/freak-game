@@ -24,93 +24,76 @@ static func body_half_size(genome: Dictionary) -> Vector2i:
 		int(remap(genome["body_width"]  as float, 40.0, 120.0, 8.0, 14.0)),
 		int(remap(genome["body_height"] as float, 60.0, 160.0, 3.0,  6.0)))
 
-# Body stamp templates — different shapes/patterns.
-# Stamped with centre pixel at (CX, BY). Each is 21 wide x 13 tall, anchor (10,6).
-const BODY_ROUND := [
-	"......................",
-	"....OOOOOOOOOOo.......",
-	"...OBBBBBbbbBBBO......",
-	"..OBBBBBbbbbbBBBO.....",
-	"..OBBBBBbbbbbBBBO.....",
-	"..OBBBBBBBBBBsBBO.....",
-	"..OBBBBBBBBBBsBBO.....",
-	"..OBBBBBBBBBBsBBO.....",
-	"...OBBBBBBBBsBBO......",
-	"....OOOOOOOOOOO.......",
-	"......................",
-	"......................",
-	"......................",
+# ── Duck body: wide egg, prominent belly patch ──────────────────────────────
+# 24 wide x 10 tall. Anchor: col 12, row 4
+const BODY_DUCK := [
+	"....OOOOOOOOOOOOOO......",
+	"...OBBBBBBBBBBBBsBo.....",
+	"..OBBBBBbbbbbbBBBBO.....",
+	"..OBBBBBbbbbbbBBBBO.....",
+	"..OBBBBBBBBBBBBBsBo.....",
+	"..OBBBBBBBBBBBBBsBo.....",
+	"...OBBBBBBBBBBBsBo......",
+	"....OOOOOOOOOOOOO.......",
+	"........................",
+	"........................",
 ]
-const BODY_WIDE := [
-	"......................",
-	"..OOOOOOOOOOOOOOo....",
-	".OBBBBBBbbbBBBBBBO...",
-	"OBBBBBBBbbbbbBBBBBBO.",
-	"OBBBBBBBbbbbbBBBBBBO.",
-	"OBBBBBBBBBBBBsBBBBBO.",
-	"OBBBBBBBBBBBBsBBBBBO.",
-	".OBBBBBBBBBBBsBBBBO..",
-	"..OBBBBBBBBBBBBBBOO..",
-	"...OOOOOOOOOOOOOOO...",
-	"......................",
-	"......................",
-	"......................",
+# ── Dragon body: barrel chest, armored shoulder plates ──────────────────────
+# 28 wide x 10 tall. Anchor: col 14, row 4
+const BODY_DRAGON := [
+	"AAAOOOOOOOOOOOOOOOOOAAA.",
+	"AAOBBBBBBBBBBBBBBBBBAAo",
+	"AOBBBBBBbbbbbbBBBBBBBAo.",
+	"OBBBBBBBbbbbbbBBBBBBBBO.",
+	"OBBBBBBBBBBBBBsBBBBBBBO.",
+	"OBBBBBBBBBBBBBsBBBBBBBO.",
+	"AOBBBBBBbbbbbbBBBBBBAAo.",
+	"AAOOOOOOOOOOOOOOOOOAAAO.",
+	"........................",
+	"........................",
 ]
-const BODY_ARMOR := [
-	"......................",
-	"AAOOOOOOOOOOOOOOOAAO..",
-	"AAOBBBBbbbbbBBBBAAO..",
-	"AAOBBBBbbbbbBBBBAAO..",
-	"AAOBBBBBBBBBBBBBsBO..",
-	"AAOBBBBBBBBBBBBBsBsO.",
-	"AAOBBBBBBBBBBBBBsBO..",
-	"AAOBBBBbbbbbBBBBAAO..",
-	"AAOOOOOOOOOOOOOOOAAO..",
-	"......................",
-	"......................",
-	"......................",
-	"......................",
-]
-const BODY_SPOTS := [
-	"......................",
-	"....OOOOOOOOOOo.......",
-	"...OBBSBBBbbbBBO......",
-	"..OBBBBSBbbbbbBBO.....",
-	"..OBBSBBBbbbbbBBO.....",
-	"..OBBBBBBBBBBsBBO.....",
-	"..OBSBBBBBBBBsBBO.....",
-	"..OBBBBSBBBBBsBBO.....",
-	"...OBBBBBBBBsBBO......",
-	"....OOOOOOOOOOO.......",
-	"......................",
-	"......................",
-	"......................",
+# ── Human body: shoulders, chest, narrow waist ───────────────────────────────
+# 20 wide x 10 tall. Anchor: col 10, row 4
+const BODY_HUMAN := [
+	"....OOOOOOOOOOO......",
+	"...OBBBBBsBBBBBo.....",
+	"..OBBBBBBsBBBBBBo....",
+	"..OBBBBBBBBBBBBBo....",
+	"..OBBBbbbbbbBBBBo....",
+	"..OBBBbbbbbbBBBBo....",
+	"...OBBBBBBBBBBBo.....",
+	"....OOOOOOOOOOO......",
+	".....................",
+	".....................",
 ]
 
 func paint(genome: Dictionary) -> Image:
 	var img := PC.make_image()
 	var pal: Dictionary = PC.palette(genome)
-	var round: float = genome["roundness"] as float
-	var pat: float   = genome.get("pattern", 0.0) as float
+	var t: String = genome.get("_type", "human") as String
+	var tmpl: Array
+	var ax: int
+	var ay: int
+	if t == "duck":
+		tmpl = BODY_DUCK
+		ax = 12; ay = 4
+	elif t == "dragon":
+		tmpl = BODY_DRAGON
+		ax = 14; ay = 4
+	else:
+		tmpl = BODY_HUMAN
+		ax = 10; ay = 4
 
-	# Neck connector (3px wide, from head bottom to body top)
+	# Neck connector
 	var hr: int       = HeadTrait.head_radius(genome)
 	var neck_top: int = PC.HEAD_CY + hr - 1
-	var neck_bot: int = BY - 5
+	var neck_bot: int = BY - ay
 	if neck_bot > neck_top:
 		PC.fill_rect(img, CX - 2, neck_top, 5, neck_bot - neck_top, pal["body"])
 		PC.blend(img, CX - 2, neck_top, pal["outline"])
 		PC.blend(img, CX + 2, neck_top, pal["outline"])
 
-	# Pick body stamp
-	var tmpl: Array
-	if round >= 0.65:
-		tmpl = BODY_ROUND
-	elif round >= 0.30:
-		tmpl = BODY_WIDE if pat < 0.5 else BODY_SPOTS
-	else:
-		tmpl = BODY_ARMOR
-	PC.stamp(img, CX - 10, BY - 6, tmpl, pal)
+	PC.stamp(img, CX - ax, BY - ay, tmpl, pal)
 	return img
 
 static func _inside_body(px: int, py: int, bw: int, bh: int, round: float) -> bool:

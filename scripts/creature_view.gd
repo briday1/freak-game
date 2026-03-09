@@ -122,6 +122,7 @@ func random_genome() -> Dictionary:
 
 func set_genome(new_genome: Dictionary) -> void:
 	genome = new_genome
+	genome["_type"] = creature_type
 	_clamp_genome()
 	_repaint()
 
