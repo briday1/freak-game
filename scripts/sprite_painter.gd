@@ -71,8 +71,8 @@ static func paint(genome: Dictionary) -> Image:
 		var fade: int  = CX + half / 2
 		for px: int in range(fade, CX + half + 1):
 			PC.blend(img, px, py, pal["shadow"])
-	# Belly highlight (upper-left)
-	PC.fill_circle(img, CX - body_r / 3, body_cy - body_r / 3, maxi(2, body_r / 3), pal["belly"])
+	# Subtle specular gleam (upper-left, single pixel)
+	PC.blend(img, CX - body_r / 2, body_cy - body_r / 2, pal["belly"])
 	PC.outline_circle(img, CX, body_cy, body_r, pal["outline"])
 
 	# --- LEGS ---
