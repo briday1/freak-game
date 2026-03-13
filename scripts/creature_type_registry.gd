@@ -11,9 +11,7 @@
 class_name CreatureTypeRegistry
 
 const TYPES: Dictionary = {
-	"human":  "res://scripts/types/human_type.gd",
-	"dragon": "res://scripts/types/dragon_type.gd",
-	"duck":   "res://scripts/types/duck_type.gd",
+	"bug": "res://scripts/types/bug_type.gd",
 }
 
 static func all_type_names() -> Array:

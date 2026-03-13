@@ -3,14 +3,11 @@ extends Node2D
 @onready var creature_a: Node2D = $CanvasLayer/VBoxContainer/HBoxContainer/PanelA/VBoxContainer/SubViewportContainer/SubViewport/CreatureViewA
 @onready var creature_b: Node2D = $CanvasLayer/VBoxContainer/HBoxContainer/PanelB/VBoxContainer/SubViewportContainer/SubViewport/CreatureViewB
 @onready var creature_c: Node2D = $CanvasLayer/VBoxContainer/HBoxContainer/PanelC/VBoxContainer/SubViewportContainer/SubViewport/CreatureViewC
-@onready var picker_a: OptionButton = $CanvasLayer/VBoxContainer/HBoxContainer/PanelA/VBoxContainer/TypePickerA
-@onready var picker_b: OptionButton = $CanvasLayer/VBoxContainer/HBoxContainer/PanelB/VBoxContainer/TypePickerB
-
-const Registry := preload("res://scripts/creature_type_registry.gd")
 
 func _ready() -> void:
-	_populate_picker(picker_a)
-	_populate_picker(picker_b)
+	# Hide type pickers — single bug type, no selection needed
+	$CanvasLayer/VBoxContainer/HBoxContainer/PanelA/VBoxContainer/TypePickerA.hide()
+	$CanvasLayer/VBoxContainer/HBoxContainer/PanelB/VBoxContainer/TypePickerB.hide()
 	_new_parents()
 	# Fight button — added in code to avoid tscn surgery
 	var fight_btn := Button.new()
@@ -27,31 +24,10 @@ func _ready() -> void:
 	lab_btn.pressed.connect(_on_lab_pressed)
 	$CanvasLayer/VBoxContainer.add_child(lab_btn)
 
-func _populate_picker(picker: OptionButton) -> void:
-	picker.clear()
-	picker.add_item("🎲 Random", 0)
-	var i := 1
-	for type_name in Registry.all_type_names():
-		picker.add_item(type_name.capitalize(), i)
-		picker.set_item_metadata(i, type_name)
-		i += 1
-
-func _get_picker_type(picker: OptionButton) -> String:
-	var idx := picker.selected
-	if idx == 0:
-		return Registry.random_type_name()
-	return picker.get_item_metadata(idx)
-
 func _new_parents() -> void:
-	creature_a.set_type(_get_picker_type(picker_a))
-	creature_b.set_type(_get_picker_type(picker_b))
-	creature_c.set_type(Registry.random_type_name())
-
-func _on_type_picker_a_selected(_index: int) -> void:
-	creature_a.set_type(_get_picker_type(picker_a))
-
-func _on_type_picker_b_selected(_index: int) -> void:
-	creature_b.set_type(_get_picker_type(picker_b))
+	creature_a.set_type("bug")
+	creature_b.set_type("bug")
+	creature_c.set_type("bug")
 
 func _on_fight_pressed() -> void:
 	GameState.set_fighters(
@@ -72,9 +48,7 @@ func _breed() -> void:
 	var ga: Dictionary = creature_a.genome
 	var gb: Dictionary = creature_b.genome
 
-	# Child type chosen randomly from parents
-	var child_type: String = creature_a.creature_type if randf() < 0.5 else creature_b.creature_type
-	creature_c.set_type(child_type)
+	creature_c.set_type("bug")
 
 	# Build a genome for the child's type, blending from parents where possible.
 	var schema: Dictionary = creature_c.get_schema()
